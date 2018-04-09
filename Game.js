@@ -6,7 +6,8 @@
      black = [];
      
 var selected_piece,
-    player_turn = 'white';
+    player_turn = 'white',
+    player_phase = 'start';
  
  window.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById('chessGame');
@@ -31,7 +32,7 @@ var selected_piece,
         camera.attachControl(canvas, false );
         
         // Load board
-        BABYLON.SceneLoader.ImportMesh("","assets/models/chessboard/", "board.babylon", scene, function(meshes) {
+        BABYLON.SceneLoader.ImportMesh("", "assets/models/chessboard/", "board.babylon", scene, function(meshes) {
             chessboard = meshes[0];
             chessboard.name = 'Chessboard';
             spawnPieces('white', chessboard, scene);
@@ -44,12 +45,12 @@ var selected_piece,
         // create a built-in "ground" shape; 
         var ground = BABYLON.Mesh.CreateGround('ground1', {height:6, width:6, subdivisions: 2}, scene);
         
-        
+        // 2D array to keep track of moving pieces on the board
         chess_keeper = CreateChessboard();
         
         // return the created scene
         return scene;
-    }
+    };
         
     var scene = createScene();
         
@@ -69,9 +70,25 @@ var selected_piece,
                 selected_piece.position = pickResult.pickedPoint;
                 checkCollision();
                 selected_piece = null;
-        
-                if(player_turn === 'white') player_turn = 'black';
-                else player_turn = 'white';
+                // Check if player's turn is either white or black
+                //  - then check is it is the start of end of their turn
+                //  - if the start, then change to the end
+                //  - if the end, then change players turns
+                //  this represents the two phases of a players turn in chess
+                //  - choose a piece, then move said piece
+                if(player_turn === 'white') {
+                    if(player_phase === 'start') {
+                        player_phase === 'end';
+                    } else {
+                        player_turn = 'black';
+                    }
+                } else {
+                    if(player_phase === 'start') {
+                        player_phase === 'end';
+                    } else {
+                        player_turn = 'white';
+                    }
+                }
             } else {
                 if(pickResult.pickedMesh && 'Chessboard' != pickResult.pickedMesh.name) {
                     selected_piece = pickResult.pickedMesh;
@@ -238,6 +255,8 @@ var selected_piece,
         chessboard[7][5] = 'b_knight';
         chessboard[7][6] = 'b_bishop';
         chessboard[7][7] = 'b_rook';
+        
+        return chessboard;
     }
     
     function createArray(length) {
